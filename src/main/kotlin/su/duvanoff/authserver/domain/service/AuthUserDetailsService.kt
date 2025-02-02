@@ -1,4 +1,4 @@
-package su.duvanoff.authserver.domain
+package su.duvanoff.authserver.domain.service
 
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 import su.duvanoff.authserver.domain.repository.UserRepository
 
 @Service
-class AuthUserDetails(
+class AuthUserDetailsService (
     private val userRepository: UserRepository
 ) : UserDetailsService {
 

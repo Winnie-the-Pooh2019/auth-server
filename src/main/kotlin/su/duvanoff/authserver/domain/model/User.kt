@@ -6,8 +6,8 @@ import java.util.UUID
 data class User(
     val id: UUID? = null,
     val email: String,
-    val password: String,
     val isActive: Boolean,
+    val password: String? = null,
     val firstName: String? = null,
     val lastName: String? = null,
     val patronymic: String? = null,
@@ -15,6 +15,8 @@ data class User(
     val avatarUrl: String? = null,
 ) {
     companion object {
+        fun builder(email: String, isActive: Boolean): UserBuilder = UserBuilder(email=email, isActive=isActive)
+
         fun from(user: User): UserBuilder {
             val userBuilder = UserBuilder(
                 id = user.id,
@@ -31,11 +33,11 @@ data class User(
             return userBuilder
         }
 
-        class UserBuilder(
+        class UserBuilder constructor(
             private var id: UUID? = null,
             private var email: String,
-            private var password: String,
             private var isActive: Boolean,
+            private var password: String? = null,
             private var firstName: String? = null,
             private var lastName: String? = null,
             private var patronymic: String? = null,

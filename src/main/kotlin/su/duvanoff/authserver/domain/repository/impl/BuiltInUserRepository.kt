@@ -8,7 +8,10 @@ import java.time.LocalDate
 import java.util.*
 
 @Repository
-class BuiltInUserRepository : UserRepository, InitializingBean {
+class BuiltInUserRepository(
+//    @Autowired
+//    private val passwordEncoder: PasswordEncoder
+) : UserRepository, InitializingBean {
 
     private val _users: MutableMap<UUID, User> = HashMap()
 
@@ -16,6 +19,7 @@ class BuiltInUserRepository : UserRepository, InitializingBean {
         val updatedUser = if (user.id == null) {
             User.from(user)
                 .id(UUID.randomUUID())
+                .password(user.password ?: "")
                 .build()
         } else user
 

@@ -1,8 +1,10 @@
 package su.duvanoff.authserver.config
 
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.Ordered
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 import org.springframework.web.filter.CorsFilter
@@ -14,8 +16,8 @@ class CorsConfig {
     lateinit var origins: String
 
     @Bean
-    fun corsFilter(): CorsFilter {
-        val source = UrlBasedCorsConfigurationSource();
+    fun corsFilter(): FilterRegistrationBean<CorsFilter> {
+        val source = UrlBasedCorsConfigurationSource()
         val config = CorsConfiguration().apply {
             allowCredentials = true
             addAllowedOrigin(origins)
@@ -26,6 +28,9 @@ class CorsConfig {
 
         source.registerCorsConfiguration("/**", config)
 
-        return CorsFilter(source);
+        val bean = FilterRegistrationBean(CorsFilter(source))
+        bean.order = Ordered.HIGHEST_PRECEDENCE
+
+        return bean
     }
 }
