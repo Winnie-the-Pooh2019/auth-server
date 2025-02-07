@@ -10,7 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.web.SecurityFilterChain
-import su.duvanoff.authserver.domain.service.AuthOauthUserService
+import su.duvanoff.authserver.domain.service.LocalOauthUserService
 import su.duvanoff.authserver.domain.service.AuthUserDetailsService
 
 @EnableWebSecurity
@@ -18,7 +18,7 @@ import su.duvanoff.authserver.domain.service.AuthUserDetailsService
 @Configuration(proxyBeanMethods = false)
 class SecurityConfig(
     @Autowired
-    private val customOAuth2UserService: AuthOauthUserService,
+    private val customOAuth2UserService: LocalOauthUserService,
 
     @Autowired
     private val userDetailService: AuthUserDetailsService
@@ -29,18 +29,17 @@ class SecurityConfig(
         val socialConfigurer = SocialConfigurer().apply {
             this.oAuth2UserService = customOAuth2UserService
         }
-
         http.apply(socialConfigurer)
 
         http.getSharedObject(AuthenticationManagerBuilder::class.java)
             .userDetailsService<UserDetailsService>(userDetailService)
 
-        http.authorizeHttpRequests {
-            it.anyRequest().authenticated()
-        }
+        http
+            .authorizeHttpRequests {
+                it.anyRequest().authenticated()
+            }
 
         return http
-//            .oauth2Login(Customizer.withDefaults())
             .formLogin(Customizer.withDefaults())
             .build()
     }

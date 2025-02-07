@@ -1,6 +1,10 @@
 package su.duvanoff.authserver.domain.service
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.stereotype.Service
 import su.duvanoff.authserver.domain.model.AuthProvider
@@ -15,16 +19,18 @@ class BuildInUserService(
     private val userRepository: UserRepository
 ) : UserService {
 
-    override fun save(userDto: OAuth2User, provider: AuthProvider): User = when (provider) {
+    override fun save(userDto: OAuth2UserRequest, provider: AuthProvider): User = when (provider) {
         AuthProvider.GITHUB -> this.saveUserFromGitHub(userDto)
 
-        AuthProvider.GOOGLE -> this.saveUserFromGoogle(userDto)
+        AuthProvider.GOOGLE -> this.saveUserFromGoogle(userDto as OidcUserRequest)
     }
 
-    override fun saveAndMap(userDto: OAuth2User, provider: AuthProvider): AuthorizedUser =
+    override fun saveAndMap(userDto: OAuth2UserRequest, provider: AuthProvider): AuthorizedUser =
         save(userDto, provider).toAuthorizedUser()
 
-    private fun saveUserFromGitHub(userDto: OAuth2User): User {
+    fun saveUserFromGitHub(oauthUserRequest: OAuth2UserRequest): User {
+        val userDto = DefaultOAuth2UserService().loadUser(oauthUserRequest)
+
         val email = userDto.getAttribute<String?>("email") ?: throw AuthorizationException("Email is required")
 
         val userOptional = userRepository.findByEmail(email)
@@ -56,7 +62,9 @@ class BuildInUserService(
         return userRepository.save(userBuilder.build())
     }
 
-    private fun saveUserFromGoogle(userDto: OAuth2User): User {
+    private fun saveUserFromGoogle(oidUserRequest: OidcUserRequest): User {
+        val userDto = OidcUserService().loadUser(oidUserRequest)
+
         val email = userDto.getAttribute<String?>("email") ?: throw AuthorizationException("Email is required")
 
         val userOptional = userRepository.findByEmail(email)
